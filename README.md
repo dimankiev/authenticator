@@ -22,6 +22,7 @@ Two other examples are to supplement a user-controlled password with a one-time 
 3. Simple in use.
 4. Configuration file [AES-256](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard) Encryption.
 5. PIN Code
+6. Autoupdating code in a bottom toolbar of a terminal
 
 ![2FA Authenticator](/authenticator.png?raw=true "Screenshot")
 
