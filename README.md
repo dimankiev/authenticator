@@ -22,6 +22,9 @@ Two other examples are to supplement a user-controlled password with a one-time 
 3. Simple in use.
 4. Configuration file [AES-256](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard) Encryption.
 5. PIN Code
+
+![2FA Authenticator](/authenticator.png?raw=true "Screenshot")
+
 ### How to install ?
 ```
   git clone https://github.com/dimankiev/authenticator
