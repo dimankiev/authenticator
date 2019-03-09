@@ -24,7 +24,7 @@ Two other examples are to supplement a user-controlled password with a one-time 
 5. PIN Code
 6. Autoupdating code in a bottom toolbar of a terminal
 
-![2FA Authenticator](https://github.com/dimankiev/authenticator/raw/master/authenticator.png?raw=true "Screenshot")
+![2FA Authenticator](https://github.com/dimankiev/authenticator/raw/master/authenticator.png?raw=true "2FA Authenticator Screenshot")
 
 ### How to install ?
 ```
