@@ -2,3 +2,4 @@
  pyotp
  pyAesCrypt
  colorama
+ python-mbedtls

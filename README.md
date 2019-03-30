@@ -40,8 +40,9 @@ Two other examples are to supplement a user-controlled password with a one-time 
 4. Use command `add service_name`, then enter special 2FA key that was provided by your service on which you want to set up 2FA. _(service_name example: google, github, etc.)_
 5. Use command `list` to see added apps
 6. Use command `get service_name` to start receiving 2FA codes.
-7. Use command `remove service_name` to remove app from the authenticator
-8. Use command `exit` or combination `Ctrl+C` to close the script
+7. Use command `export service_name` to export 2FA Authenticator key.
+8. Use command `remove service_name` to remove app from the authenticator
+9. Use command `exit` or keys combination `Ctrl+C` to close the script
 ### Credits
 **Code written by** - [dimankiev](https://t.me/dimankiev)
 

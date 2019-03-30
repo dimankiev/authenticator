@@ -1,5 +1,6 @@
 try:
     import time as stime
+    from mbedtls import hash as hashlib
     import sys, base64, shelve2, os, threading, configparser, datetime, uuid, traceback, re, pyotp, pyAesCrypt, os.path
     import random as rnd
     from datetime import *
@@ -24,11 +25,10 @@ except Exception as e:
     exit()
 
 sr = Style.RESET_ALL
-version = "1.0.0.0"
+version = "1.0.2.0"
 
 auth_prompt = PromptSession()
 
-keyring = {}
 autoupdate_lable = "None"
 
 class passwordValidator(Validator):
@@ -44,12 +44,17 @@ class passwordValidator(Validator):
             raise ValidationError(message=valid_err_msg,
                                   cursor_position=i)
 
+def ripemd_hash(string):
+    ripemd = hashlib.new('ripemd160')
+    ripemd.update(str.encode(string))
+    return ripemd.hexdigest()
+
 def bottom_toolbar():
     return [('class:bottom-toolbar', getCodeToolbar(autoupdate_lable))]
 
 def getCodeToolbar(autoupdate_lable):
-        if autoupdate_lable in keyring:
-            code = pyotp.TOTP(keyring[autoupdate_lable]).now()
+        if autoupdate_lable in authenticator.keyring:
+            code = pyotp.TOTP(authenticator.keyring[autoupdate_lable]).now()
             return str("[%s] Your code is: %s" % (autoupdate_lable.upper(), code))
         else:
             return str("[HERE WILL BE SHOWN YOUR 2FA CODES]")
@@ -97,9 +102,15 @@ def initPrompt(its_password,auth,stage):
     return data
 
 init()
-print(Fore.GREEN + Style.BRIGHT + "aaa114-project Authenticator")
+print(Fore.GREEN + Style.BRIGHT + "aaa114-project Authenticator v.%s" % version)
 
 exit_mode = False #RESERVE CODE EXECUTION PREVENTION
+
+class authenticator:
+    password = ""
+    keyring = {}
+    def addPassword(password):
+        authenticator.password = ripemd_hash(password)
 
 if not os.path.isfile("configs/authenticator.db.enc"):
     print(Fore.YELLOW + Style.BRIGHT + "That is the first launch of that script.\nAuthenticator configuration will be saved automatically." + sr)
@@ -108,9 +119,11 @@ try:
     while True:
         try:
             password = initPrompt(True,True,2).replace(" ","")
-        except:
-            print(Fore.RED + Style.BRIGHT + "Exiting..." + sr)
+            authenticator.addPassword(password)
+        except Exception as e:
+            print(Fore.RED + Style.BRIGHT + "Exiting...\n%s" % str(e) + sr)
             exit_mode = True
+            traceback.print_exc()
             exit()
         if len(password) < 4 and not os.path.isfile("configs/authenticator.db.enc"):
             sol = input("PIN is too small. Generate random ?(y/n): ").lower()
@@ -147,6 +160,7 @@ def encData(mode,password):
                             while True:
                                 try:
                                     password = initPrompt(True,True,2).replace(" ","")
+                                    authenticator.addPassword(password)
                                 except:
                                     print(Fore.RED + Style.BRIGHT + "Exiting..." + sr)
                                     exit_mode = True
@@ -185,7 +199,7 @@ def loadData():
 def saveData(keyring):
     try:
         save = shelve2.open("configs/authenticator")
-        save["keyring"] = keyring
+        save["keyring"] = authenticator.keyring
         save.close()
         encData("encrypt",password)
     except:
@@ -225,18 +239,18 @@ while True:
         pass
     if auth_data["success"]:
         try:
-            keyring = auth_data["keyring"]
+            authenticator.keyring = auth_data["keyring"]
             break
         except Exception as e:
-            keyring = {}
+            authenticator.keyring = {}
             break
     else:
-        keyring = {}
+        authenticator.keyring = {}
         break
 if exit_mode:
     exit()
 
-print(Fore.YELLOW + Style.BRIGHT + "Commands:    help - show available commands\n    add <your_lable> - add new authenticator\n    remove <your_lable> - remove authenticator\n    get <your_lable> - get authenticator code\n    list - list your apps registered in authenticator\n    clear - clear terminal output" + sr)
+print(Fore.YELLOW + Style.BRIGHT + "Commands:    help - show available commands\n    add <your_lable> - add new authenticator\n    remove <your_lable> - remove authenticator\n    get <your_lable> - get authenticator code\n    export <your_lable> - export 2FA Authenticator TOTP Key\n    list - list your apps registered in authenticator\n    clear - clear terminal output" + sr)
 
 while True:
     try:
@@ -245,36 +259,54 @@ while True:
             try:
                 lable = cmd.split(" ")[1]
                 key = initPrompt(False,True,1)
-                keyring[lable] = key
-                print(Fore.GREEN + Style.BRIGHT + "Successful added %s to keyring !" % str(Fore.WHITE + lable + Fore.GREEN))
-                autoupdate_lable = lable
+                if not lable in authenticator.keyring:
+                    authenticator.keyring[lable] = key
+                    print(Fore.GREEN + Style.BRIGHT + "Successful added %s to keyring !" % str(Fore.WHITE + lable + Fore.GREEN))
+                    autoupdate_lable = lable
+                else:
+                    print(Fore.YELLOW + Style.BRIGHT + "%s is already exists !" % lable.upper())
             except:
                 print(Fore.YELLOW + Style.BRIGHT + "Usage:\n    add <your_lable> - add new authenticator")
         elif "remove" in cmd:
             try:
                 lable = cmd.split(" ")[1]
-                del keyring[lable]
-                print(Fore.GREEN + Style.BRIGHT + "Successful removed %s from keyring !" % str(Fore.WHITE + lable + Fore.GREEN))
+                del authenticator.keyring[lable]
+                print(Fore.GREEN + Style.BRIGHT + "Successful removed %s from authenticator.keyring !" % str(Fore.WHITE + lable + Fore.GREEN))
             except:
                 print(Fore.YELLOW + Style.BRIGHT + "Usage:\n    remove <your_lable> - remove authenticator")
         elif "get" in cmd:
             try:
                 lable = cmd.split(" ")[1]
                 autoupdate_lable = lable
-                code = pyotp.TOTP(keyring[lable]).now()
+                code = pyotp.TOTP(authenticator.keyring[lable]).now()
                 print(Fore.BLUE + Style.BRIGHT + "[%s] Your code: %s" % (Fore.MAGENTA + lable.upper() + Fore.BLUE, Fore.WHITE + code))
             except:
                 print(Fore.YELLOW + Style.BRIGHT + "Usage:\n    get <your_lable> - get authenticator code")
-                traceback.print_exc()
         elif "list" in cmd:
             try:
                 print(Fore.CYAN + Style.BRIGHT + "Your apps registered in the authenticator:\n")
-                for i in keyring:
+                for i in authenticator.keyring:
                     print(Fore.BLUE + i)
             except:
                 print(Fore.RED + "Nothing was registered! Add new app 2FA key now by 'add' command.")
+        elif "export" in cmd:
+            try:
+                lable = cmd.split(" ")[1]
+                if lable in authenticator.keyring:
+                    print(Fore.RED + Style.BRIGHT + "[!WARNING!]\n" + Fore.YELLOW + "That operation is unsafe !\nIf you really want to export your TOTP 2FA Key, you must enter your valid PIN code !\n" + Fore.RED + "[!WARNING!]" + sr)
+                    try:
+                        if ripemd_hash(initPrompt(True,True,2).replace(" ","")) == authenticator.password:
+                            print(Fore.YELLOW + Style.BRIGHT + "TOTP 2FA HASH FOR %s: %s" % (lable.upper(), Fore.WHITE + authenticator.keyring[lable] + sr))
+                        else:
+                            print(Fore.RED + Style.BRIGHT + "Incorrect PIN ! Try again later !")
+                    except:
+                        print(Fore.RED + Style.BRIGHT + "Incorrect PIN ! Try again later !")
+                else:
+                    print(Fore.YELLOW + Style.BRIGHT + "%s is not exists in your keyring !" % lable.upper())
+            except:
+                print(Fore.YELLOW + Style.BRIGHT + "Usage:\n    export <your_lable> - export 2FA Authenticator TOTP Key " + Fore.RED + "[DANGEROUS]" + sr)
         elif "exit" in cmd:
-            saveData(keyring)
+            saveData(authenticator.keyring)
             print(Fore.RED + Style.BRIGHT + "Exiting..." + sr)
             exit()
         elif "clear" in cmd:
@@ -284,6 +316,6 @@ while True:
         else:
             print(Fore.RED + Style.BRIGHT + "Command is unrecognized !")
     except KeyboardInterrupt:
-        saveData(keyring)
+        saveData(authenticator.keyring)
         print(Fore.RED + Style.BRIGHT + "Exiting..." + sr)
         exit()
