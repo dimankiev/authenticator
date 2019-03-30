@@ -1,4 +1,4 @@
-# 2FA Python-based Authenticator
+# 2FA Python-based Authenticator v1.0.2.0
 Python-Based Crossplatform CLI TOTP 2FA Authenticator with AES-256 encryption for better security.
 ### What is TOTP ?
 The Time-based One-time Password algorithm (TOTP) is an extension of the HMAC-based One-time Password algorithm (HOTP) generating a one-time password by instead taking uniqueness from the current time. It has been adopted as Internet Engineering Task Force standard RFC 6238, is the cornerstone of Initiative For Open Authentication (OATH), and is used in a number of two-factor authentication systems. **So it's default Password algorithm, which is used in many variations of 2FA authenticators, such as Google Authenticator, andOTP, Authy, etc.**
