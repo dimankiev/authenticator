@@ -312,7 +312,7 @@ while True:
         elif "clear" in cmd:
             clear()
         elif "help" in cmd:
-            print(Fore.YELLOW + Style.BRIGHT + "Commands:    help - show available commands\n    add <your_lable> - add new authenticator\n    remove <your_lable> - remove authenticator\n    get <your_lable> - get authenticator code\n    list - list your apps registered in authenticator\n    clear - clear terminal output" + sr)
+			print(Fore.YELLOW + Style.BRIGHT + "Commands:    help - show available commands\n    add <your_lable> - add new authenticator\n    remove <your_lable> - remove authenticator\n    get <your_lable> - get authenticator code\n    export <your_lable> - export 2FA Authenticator TOTP Key\n    list - list your apps registered in authenticator\n    clear - clear terminal output" + sr)
         else:
             print(Fore.RED + Style.BRIGHT + "Command is unrecognized !")
     except KeyboardInterrupt:
